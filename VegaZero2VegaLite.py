@@ -1,7 +1,9 @@
 __author__ = "Yuyu Luo"
 
 import json
+
 import pandas
+
 
 class VegaZero2VegaLite(object):
     def __init__(self):
@@ -33,31 +35,46 @@ class VegaZero2VegaLite(object):
                     'type': ''
                 },
                 'topk': ''
+            },
+            'interactive': {
+                'legend': '',
+                'tooltip': '',
+                'scales': '',
             }
         }
         vega_zero_keywords = vega_zero.split(' ')
 
         self.parsed_vegaZero['mark'] = vega_zero_keywords[vega_zero_keywords.index('mark') + 1]
         self.parsed_vegaZero['data'] = vega_zero_keywords[vega_zero_keywords.index('data') + 1]
-        self.parsed_vegaZero['encoding']['x'] = vega_zero_keywords[vega_zero_keywords.index('x') + 1]
-        self.parsed_vegaZero['encoding']['y']['y'] = vega_zero_keywords[vega_zero_keywords.index('aggregate') + 2]
-        self.parsed_vegaZero['encoding']['y']['aggregate'] = vega_zero_keywords[vega_zero_keywords.index('aggregate') + 1]
+        self.parsed_vegaZero['encoding']['x'] = vega_zero_keywords[vega_zero_keywords.index('x') +
+                                                                   1]
+        self.parsed_vegaZero['encoding']['y']['y'] = vega_zero_keywords[
+            vega_zero_keywords.index('aggregate') + 2]
+        self.parsed_vegaZero['encoding']['y']['aggregate'] = vega_zero_keywords[
+            vega_zero_keywords.index('aggregate') + 1]
         if 'color' in vega_zero_keywords:
-            self.parsed_vegaZero['encoding']['color']['z'] = vega_zero_keywords[vega_zero_keywords.index('color') + 1]
+            self.parsed_vegaZero['encoding']['color']['z'] = vega_zero_keywords[
+                vega_zero_keywords.index('color') + 1]
 
         if 'topk' in vega_zero_keywords:
-            self.parsed_vegaZero['transform']['topk'] = vega_zero_keywords[vega_zero_keywords.index('topk') + 1]
+            self.parsed_vegaZero['transform']['topk'] = vega_zero_keywords[
+                vega_zero_keywords.index('topk') + 1]
 
         if 'sort' in vega_zero_keywords:
-            self.parsed_vegaZero['transform']['sort']['axis'] = vega_zero_keywords[vega_zero_keywords.index('sort') + 1]
-            self.parsed_vegaZero['transform']['sort']['type'] = vega_zero_keywords[vega_zero_keywords.index('sort') + 2]
+            self.parsed_vegaZero['transform']['sort']['axis'] = vega_zero_keywords[
+                vega_zero_keywords.index('sort') + 1]
+            self.parsed_vegaZero['transform']['sort']['type'] = vega_zero_keywords[
+                vega_zero_keywords.index('sort') + 2]
 
         if 'group' in vega_zero_keywords:
-            self.parsed_vegaZero['transform']['group'] = vega_zero_keywords[vega_zero_keywords.index('group') + 1]
+            self.parsed_vegaZero['transform']['group'] = vega_zero_keywords[
+                vega_zero_keywords.index('group') + 1]
 
         if 'bin' in vega_zero_keywords:
-            self.parsed_vegaZero['transform']['bin']['axis'] = vega_zero_keywords[vega_zero_keywords.index('bin') + 1]
-            self.parsed_vegaZero['transform']['bin']['type'] = vega_zero_keywords[vega_zero_keywords.index('bin') + 3]
+            self.parsed_vegaZero['transform']['bin']['axis'] = vega_zero_keywords[
+                vega_zero_keywords.index('bin') + 1]
+            self.parsed_vegaZero['transform']['bin']['type'] = vega_zero_keywords[
+                vega_zero_keywords.index('bin') + 3]
 
         if 'filter' in vega_zero_keywords:
 
@@ -69,8 +86,9 @@ class VegaZero2VegaLite(object):
                     break
 
             if 'between' in filter_part_token:
-                filter_part_token[filter_part_token.index('between') + 2] = 'and ' + filter_part_token[
-                    filter_part_token.index('between') - 1] + ' <='
+                filter_part_token[
+                    filter_part_token.index('between') +
+                    2] = 'and ' + filter_part_token[filter_part_token.index('between') - 1] + ' <='
                 filter_part_token[filter_part_token.index('between')] = '>='
 
             # replace 'and' -- 'or'
@@ -92,12 +110,14 @@ class VegaZero2VegaLite(object):
                         # each = '&' or '|'
                         if 'like' == each_conditions[1]:
                             # only consider this case: '%a%'
-                            if each_conditions[2][1] == '%' and each_conditions[2][len(each_conditions[2]) - 2] == '%':
+                            if each_conditions[2][1] == '%' and each_conditions[2][
+                                    len(each_conditions[2]) - 2] == '%':
                                 final_filter_part += 'indexof(' + 'datum.' + each_conditions[0] + ',"' + \
                                                      each_conditions[2][2:len(each_conditions[2]) - 2] + '") != -1'
                         elif 'like' == each_conditions[2] and 'not' == each_conditions[1]:
 
-                            if each_conditions[3][1] == '%' and each_conditions[3][len(each_conditions[3]) - 2] == '%':
+                            if each_conditions[3][1] == '%' and each_conditions[3][
+                                    len(each_conditions[3]) - 2] == '%':
                                 final_filter_part += 'indexof(' + 'datum.' + each_conditions[0] + ',"' + \
                                                      each_conditions[3][2:len(each_conditions[3]) - 2] + '") == -1'
                         else:
@@ -111,38 +131,84 @@ class VegaZero2VegaLite(object):
 
             else:
                 # only single filter condition
-                self.parsed_vegaZero['transform']['filter'] = 'datum.' + ' '.join(filter_part_token).strip()
+                self.parsed_vegaZero['transform']['filter'] = 'datum.' + ' '.join(
+                    filter_part_token).strip()
+
+        if 'legend' in vega_zero_keywords:
+            index = vega_zero_keywords.index('legend')
+            field = vega_zero_keywords[index + 1]
+            func = vega_zero_keywords[index + 2]
+            self.parsed_vegaZero['interactive']['legend'] = field
+            self.parsed_vegaZero['interactive']['func'] = func
+
+        if 'tooltip' in vega_zero_keywords:
+            index = vega_zero_keywords.index('tooltip')
+            field = vega_zero_keywords[index + 1]
+            aggregate = vega_zero_keywords[index + 2]
+            self.parsed_vegaZero['interactive']['tooltip'] = field
+            self.parsed_vegaZero['interactive']['aggregate'] = aggregate
+
+        if 'scales' in vega_zero_keywords:
+            self.parsed_vegaZero['interactive']['scales'] = 'scales'
 
         return self.parsed_vegaZero
 
     def to_VegaLite(self, vega_zero, dataframe=None):
         self.VegaLiteSpec = {
             'bar': {
-                "mark": "bar",
-                "encoding": {
-                    "x": {"field": "x", "type": "nominal"},
-                    "y": {"field": "y", "type": "quantitative"}
+                'mark': 'bar',
+                'selection': {},
+                'encoding': {
+                    'x': {
+                        'field': 'x',
+                        'type': 'nominal'
+                    },
+                    'y': {
+                        'field': 'y',
+                        'type': 'quantitative'
+                    }
                 }
             },
             'arc': {
-                "mark": "arc",
-                "encoding": {
-                    "color": {"field": "x", "type": "nominal"},
-                    "theta": {"field": "y", "type": "quantitative"}
+                'mark': 'arc',
+                'selection': {},
+                'encoding': {
+                    'color': {
+                        'field': 'x',
+                        'type': 'nominal'
+                    },
+                    'theta': {
+                        'field': 'y',
+                        'type': 'quantitative'
+                    }
                 }
             },
             'line': {
-                "mark": "line",
-                "encoding": {
-                    "x": {"field": "x", "type": "nominal"},
-                    "y": {"field": "y", "type": "quantitative"}
+                'mark': 'line',
+                'selection': {},
+                'encoding': {
+                    'x': {
+                        'field': 'x',
+                        'type': 'nominal'
+                    },
+                    'y': {
+                        'field': 'y',
+                        'type': 'quantitative'
+                    }
                 }
             },
             'point': {
-                "mark": "point",
-                "encoding": {
-                    "x": {"field": "x", "type": "quantitative"},
-                    "y": {"field": "y", "type": "quantitative"}
+                'mark': 'point',
+                'selection': {},
+                'encoding': {
+                    'x': {
+                        'field': 'x',
+                        'type': 'quantitative'
+                    },
+                    'y': {
+                        'field': 'y',
+                        'type': 'quantitative'
+                    }
                 }
             }
         }
@@ -152,23 +218,32 @@ class VegaZero2VegaLite(object):
         # assign some vega-zero keywords to the VegaLiteSpec object
         if isinstance(dataframe, pandas.core.frame.DataFrame):
             self.VegaLiteSpec[VegaZero['mark']]['data'] = dict()
-            self.VegaLiteSpec[VegaZero['mark']]['data']['values'] = json.loads(dataframe.to_json(orient='records'))
+            self.VegaLiteSpec[VegaZero['mark']]['data']['values'] = json.loads(
+                dataframe.to_json(orient='records'))
 
         if VegaZero['mark'] != 'arc':
-            self.VegaLiteSpec[VegaZero['mark']]['encoding']['x']['field'] = VegaZero['encoding']['x']
-            self.VegaLiteSpec[VegaZero['mark']]['encoding']['y']['field'] = VegaZero['encoding']['y']['y']
-            if VegaZero['encoding']['y']['aggregate'] != '' and VegaZero['encoding']['y']['aggregate'] != 'none':
-                self.VegaLiteSpec[VegaZero['mark']]['encoding']['y']['aggregate'] = VegaZero['encoding']['y']['aggregate']
+            self.VegaLiteSpec[
+                VegaZero['mark']]['encoding']['x']['field'] = VegaZero['encoding']['x']
+            self.VegaLiteSpec[
+                VegaZero['mark']]['encoding']['y']['field'] = VegaZero['encoding']['y']['y']
+            if VegaZero['encoding']['y']['aggregate'] != '' and VegaZero['encoding']['y'][
+                    'aggregate'] != 'none':
+                self.VegaLiteSpec[VegaZero['mark']]['encoding']['y']['aggregate'] = VegaZero[
+                    'encoding']['y']['aggregate']
         else:
-            self.VegaLiteSpec[VegaZero['mark']]['encoding']['color']['field'] = VegaZero['encoding']['x']
-            self.VegaLiteSpec[VegaZero['mark']]['encoding']['theta']['field'] = VegaZero['encoding']['y']['y']
-            if VegaZero['encoding']['y']['aggregate'] != '' and VegaZero['encoding']['y']['aggregate'] != 'none':
-                self.VegaLiteSpec[VegaZero['mark']]['encoding']['theta']['aggregate'] = VegaZero['encoding']['y'][
-                    'aggregate']
+            self.VegaLiteSpec[
+                VegaZero['mark']]['encoding']['color']['field'] = VegaZero['encoding']['x']
+            self.VegaLiteSpec[
+                VegaZero['mark']]['encoding']['theta']['field'] = VegaZero['encoding']['y']['y']
+            if VegaZero['encoding']['y']['aggregate'] != '' and VegaZero['encoding']['y'][
+                    'aggregate'] != 'none':
+                self.VegaLiteSpec[VegaZero['mark']]['encoding']['theta']['aggregate'] = VegaZero[
+                    'encoding']['y']['aggregate']
 
         if VegaZero['encoding']['color']['z'] != '':
             self.VegaLiteSpec[VegaZero['mark']]['encoding']['color'] = {
-                'field': VegaZero['encoding']['color']['z'], 'type': 'nominal'
+                'field': VegaZero['encoding']['color']['z'],
+                'type': 'nominal'
             }
 
         # it seems that the group will be performed by VegaLite defaultly, in our cases.
@@ -179,7 +254,8 @@ class VegaZero2VegaLite(object):
             if VegaZero['transform']['bin']['axis'] == 'x':
                 self.VegaLiteSpec[VegaZero['mark']]['encoding']['x']['type'] = 'temporal'
                 if VegaZero['transform']['bin']['type'] in ['date', 'year', 'week', 'month']:
-                    self.VegaLiteSpec[VegaZero['mark']]['encoding']['x']['timeUnit'] = VegaZero['transform']['bin']['type']
+                    self.VegaLiteSpec[VegaZero['mark']]['encoding']['x']['timeUnit'] = VegaZero[
+                        'transform']['bin']['type']
                 elif VegaZero['transform']['bin']['type'] == 'weekday':
                     self.VegaLiteSpec[VegaZero['mark']]['encoding']['x']['timeUnit'] = 'week'
                 else:
@@ -188,14 +264,15 @@ class VegaZero2VegaLite(object):
         if VegaZero['transform']['filter'] != '':
             if 'transform' not in self.VegaLiteSpec[VegaZero['mark']]:
                 self.VegaLiteSpec[VegaZero['mark']]['transform'] = [{
-                    "filter": VegaZero['transform']['filter']
+                    'filter':
+                    VegaZero['transform']['filter']
                 }]
             elif 'filter' not in self.VegaLiteSpec[VegaZero['mark']]['transform']:
-                self.VegaLiteSpec[VegaZero['mark']]['transform'].append({
-                    "filter": VegaZero['transform']['filter']
-                })
+                self.VegaLiteSpec[VegaZero['mark']]['transform'].append(
+                    {'filter': VegaZero['transform']['filter']})
             else:
-                self.VegaLiteSpec[VegaZero['mark']]['transform']['filter'] += ' & ' + VegaZero['transform']['filter']
+                self.VegaLiteSpec[VegaZero['mark']]['transform'][
+                    'filter'] += ' & ' + VegaZero['transform']['filter']
 
         if VegaZero['transform']['topk'] != '':
             if VegaZero['transform']['sort']['axis'] == 'x':
@@ -212,29 +289,35 @@ class VegaZero2VegaLite(object):
             if 'transform' in self.VegaLiteSpec[VegaZero['mark']]:
                 current_filter = self.VegaLiteSpec[VegaZero['mark']]['transform'][0]['filter']
                 self.VegaLiteSpec[VegaZero['mark']]['transform'][0][
-                    'filter'] = current_filter + ' & ' + "datum.rank <= " + str(VegaZero['transform']['topk'])
-                self.VegaLiteSpec[VegaZero['mark']]['transform'].insert(0, {
-                    "window": [{
-                        "field": sort_field,
-                        "op": "dense_rank",
-                        "as": "rank"
-                    }],
-                    "sort": [{"field": sort_field, "order": sort_order}]
-                })
-            else:
-                self.VegaLiteSpec[VegaZero['mark']]['transform'] = [
-                    {
-                        "window": [{
-                            "field": sort_field,
-                            "op": "dense_rank",
-                            "as": "rank"
+                    'filter'] = current_filter + ' & ' + 'datum.rank <= ' + str(
+                        VegaZero['transform']['topk'])
+                self.VegaLiteSpec[VegaZero['mark']]['transform'].insert(
+                    0, {
+                        'window': [{
+                            'field': sort_field,
+                            'op': 'dense_rank',
+                            'as': 'rank'
                         }],
-                        "sort": [{"field": sort_field, "order": sort_order}]
-                    },
-                    {
-                        "filter": "datum.rank <= " + str(VegaZero['transform']['topk'])
-                    }
-                ]
+                        'sort': [{
+                            'field': sort_field,
+                            'order': sort_order
+                        }]
+                    })
+            else:
+                self.VegaLiteSpec[VegaZero['mark']]['transform'] = [{
+                    'window': [{
+                        'field': sort_field,
+                        'op': 'dense_rank',
+                        'as': 'rank'
+                    }],
+                    'sort': [{
+                        'field': sort_field,
+                        'order': sort_order
+                    }]
+                }, {
+                    'filter':
+                    'datum.rank <= ' + str(VegaZero['transform']['topk'])
+                }]
 
         if VegaZero['transform']['sort']['axis'] != '':
             if VegaZero['transform']['sort']['axis'] == 'x':
@@ -248,5 +331,88 @@ class VegaZero2VegaLite(object):
                 else:
                     self.VegaLiteSpec[VegaZero['mark']]['encoding']['x']['sort'] = 'y'
 
-        return self.VegaLiteSpec[VegaZero['mark']]
+        if self.parsed_vegaZero['interactive']['tooltip'] != '':
+            field = self.parsed_vegaZero['interactive']['tooltip']
+            aggregate = self.parsed_vegaZero['interactive']['aggregate']
+            self.VegaLiteSpec[VegaZero['mark']]['encoding']['tooltip'] = {
+                'field': field,
+                'type': 'nominal',
+                'aggregate': aggregate
+            }
 
+        if self.parsed_vegaZero['interactive']['scales'] != '':
+            self.VegaLiteSpec[VegaZero['mark']]['selection']['grid'] = {
+                'type': 'interval',
+                'bind': 'scales'
+            }
+
+        if self.parsed_vegaZero['interactive']['legend'] != '':
+            field = self.parsed_vegaZero['interactive']['legend']
+            func = self.parsed_vegaZero['interactive']['func']
+            if func == 'highlight':
+                self.VegaLiteSpec[VegaZero['mark']]['selection']['legend'] = {
+                    'type': 'multi',
+                    'fields': [field],
+                    'bind': 'legend'
+                }
+                self.VegaLiteSpec[VegaZero['mark']]['encoding']['opacity'] = {
+                    'condition': {
+                        'selection': 'legend',
+                        'value': 1
+                    },
+                    'value': 0.2
+                }
+            elif func == 'filter_':
+                fig = self.VegaLiteSpec[VegaZero['mark']].copy()
+                fig.pop('data')
+
+                if fig['selection'] == {}:
+                    fig.pop('selection')
+
+                if 'transform' in fig:
+                    transform = fig['transform']
+                else:
+                    transform = []
+
+                transform.append({'filter': {'selection': 'legend'}})
+                fig['transform'] = transform
+
+                fig['encoding']['color'] = {
+                    'field': VegaZero['encoding']['x'],
+                    'type': 'nominal',
+                    'legend': False
+                }
+
+                legend = {
+                    'mark': 'text',
+                    'encoding': {
+                        'color': {
+                            'field': field,
+                            'type': 'nominal',
+                            'legend': True
+                        }
+                    },
+                    'selection': {
+                        'legend': {
+                            'type': 'multi',
+                            'fields': [field],
+                            'bind': 'legend'
+                        }
+                    }
+                }
+
+                self.VegaLiteSpec[VegaZero['mark']] = {
+                    'data': self.VegaLiteSpec[VegaZero['mark']]['data'],
+                    'layer': [fig, legend],
+                    'resolve': {
+                        'scale': {
+                            'color': 'independent'
+                        }
+                    },
+                    'selection': {}
+                }
+
+        if self.VegaLiteSpec[VegaZero['mark']]['selection'] == {}:
+            self.VegaLiteSpec[VegaZero['mark']].pop('selection')
+
+        return self.VegaLiteSpec[VegaZero['mark']]
